@@ -11,6 +11,7 @@ final class AppModel: ObservableObject {
 
     let mouse: MouseModel
     let headset: HeadsetLink
+    let usage: UsageModel
 
     private let manager: PointerServiceManager
     private let applier: PointerSettingsApplier
@@ -25,6 +26,7 @@ final class AppModel: ObservableObject {
         self.applier = applier
         self.mouse = MouseModel(store: store, applier: applier, manager: manager)
         self.headset = HeadsetLink.shared
+        self.usage = UsageModel()
     }
 
     func start() {

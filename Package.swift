@@ -27,9 +27,14 @@ let package = Package(
                 .linkedFramework("CoreBluetooth"),
             ]
         ),
+        .target(
+            name: "UsageControl",
+            path: "Sources/UsageControl",
+            linkerSettings: [.linkedFramework("Security")]
+        ),
         .executableTarget(
             name: "AlexToolBox",
-            dependencies: ["MouseControl", "HeadsetControl"],
+            dependencies: ["MouseControl", "HeadsetControl", "UsageControl"],
             path: "Sources/AlexToolBox"
         ),
         .testTarget(
@@ -41,6 +46,11 @@ let package = Package(
             name: "HeadsetControlTests",
             dependencies: ["HeadsetControl"],
             path: "Tests/HeadsetControlTests"
+        ),
+        .testTarget(
+            name: "UsageControlTests",
+            dependencies: ["UsageControl"],
+            path: "Tests/UsageControlTests"
         ),
     ],
     swiftLanguageModes: [.v5]

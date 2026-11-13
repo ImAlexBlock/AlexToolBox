@@ -4,6 +4,7 @@ macOS 26+ 菜单栏工具，合并 Macouse 与 HeyMelodyBar：
 
 - **鼠标**：Windows 指针模型（加速开关 + 1…11 档速度），写入 Apple HID 驱动读取的指针加速属性。
 - **耳机**：OPPO / OnePlus 耳机私有 SPP 协议，切换自适应 / 降噪 / 通透 / 关闭。
+- **额度**：OpenCode Go 的 5 小时 / 本周 / 本月用量，支持 API Key 与自动刷新。
 
 窗口用 SwiftUI `MenuBarExtra(.window)`，Liquid Glass（`glassEffect` / `GlassEffectContainer` / `.buttonStyle(.glass)`）与弹簧、matched-geometry 动画。
 
@@ -27,6 +28,7 @@ swift test
 
 - `MouseControlTests`：加速表字节布局、驱动解码后的增益/断点、参数化曲线、档位倍率、目标选择。
 - `HeadsetControlTests`：OPOv1 帧编码、LEB128、拆帧/分片、降噪位图、上报子模式映射。
+- `UsageControlTests`：额度响应解析、百分比/重置时间、HTTP 错误映射、Keychain 读写。
 
 ## 结构
 
@@ -34,9 +36,10 @@ swift test
 | --- | --- |
 | `Sources/MouseControl/` | Windows 指针模型、加速表编码、HID 服务读写、快照/设置存储 |
 | `Sources/HeadsetControl/` | OPO 协议编解码、RFCOMM 链路管理 |
-| `Sources/AlexToolBox/` | SwiftUI App、菜单栏 UI、鼠标/耳机面板 |
+| `Sources/UsageControl/` | OpenCode Go 额度客户端、响应解析、Keychain 存储 |
+| `Sources/AlexToolBox/` | SwiftUI App、菜单栏 UI、鼠标/耳机/额度面板 |
 | `Sources/MacouseSPI/` | 私有 IOKit SPI 声明 |
-| `Tests/` | 两套 XCTest |
+| `Tests/` | 三套 XCTest |
 
 ## 行为说明
 
@@ -44,3 +47,5 @@ swift test
 - 指针原值快照保存在 `~/Library/Application Support/AlexToolBox/originals.plist`，退出时恢复。
 - 耳机通过 SDP UUID `0000079A-D102-11E1-9B23-00025B00A5A5` 识别已配对设备，通道号由 SDP 给出。
 - 耳机首次打开 RFCOMM 可能超时，代码有次数上限与退避，避免打断 ACL 链路。
+- 额度来自 `GET https://opencode.ai/zen/go/v1/usage`（Bearer API Key）。Key 只保存在本机登录钥匙串，
+  只发送到 `opencode.ai`；页面打开时立即读取，之后每 60 秒自动刷新。

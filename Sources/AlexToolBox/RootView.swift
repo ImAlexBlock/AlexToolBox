@@ -4,13 +4,15 @@ import SwiftUI
 
 struct RootView: View {
     @ObservedObject var model: AppModel
+    @Environment(\.scenePhase) private var scenePhase
     @State private var section: Section = .mouse
-    @State private var hasAppeared = false
+    @State private var isPresented = false
     @Namespace private var tabNamespace
 
     private enum Section: String, CaseIterable, Identifiable {
         case mouse
         case headset
+        case usage
 
         var id: String { rawValue }
 
@@ -18,6 +20,7 @@ struct RootView: View {
             switch self {
             case .mouse: return "鼠标"
             case .headset: return "耳机"
+            case .usage: return "额度"
             }
         }
 
@@ -25,6 +28,7 @@ struct RootView: View {
             switch self {
             case .mouse: return "computermouse.fill"
             case .headset: return "headphones"
+            case .usage: return "chart.bar.fill"
             }
         }
     }
@@ -35,15 +39,20 @@ struct RootView: View {
             switcher
 
             ZStack(alignment: .top) {
-                if section == .mouse {
+                switch section {
+                case .mouse:
                     MouseSection(model: model.mouse)
                         .transition(.blurReplace)
-                } else {
+                case .headset:
                     HeadsetSection(link: model.headset)
+                        .transition(.blurReplace)
+                case .usage:
+                    UsageSection(model: model.usage)
                         .transition(.blurReplace)
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: 210, alignment: .top)
+            .frame(maxWidth: .infinity)
+            .frame(height: 250, alignment: .top)
             .animation(.snappy(duration: 0.34, extraBounce: 0.06), value: section)
 
             Divider()
@@ -53,11 +62,22 @@ struct RootView: View {
         }
         .padding(16)
         .frame(width: 356)
-        .opacity(hasAppeared ? 1 : 0)
-        .scaleEffect(hasAppeared ? 1 : 0.97, anchor: .top)
+        .opacity(isPresented ? 1 : 0)
+        .scaleEffect(isPresented ? 1 : 0.84, anchor: .top)
+        .offset(y: isPresented ? 0 : -10)
         .onAppear {
-            withAnimation(.spring(response: 0.36, dampingFraction: 0.82)) {
-                hasAppeared = true
+            withAnimation(.spring(response: 0.42,
+                                  dampingFraction: 0.64,
+                                  blendDuration: 0.04)) {
+                isPresented = true
+            }
+        }
+        .onDisappear {
+            isPresented = false
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .background {
+                isPresented = false
             }
         }
     }
@@ -81,7 +101,7 @@ struct RootView: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text("AlexToolBox")
                     .font(.system(size: 15, weight: .semibold))
-                Text("指针提速 · 耳机降噪")
+                Text("指针 · 耳机 · 额度")
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
             }
